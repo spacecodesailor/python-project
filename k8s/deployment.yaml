@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simpleapp-deployment
+  labels:
+    app: simpleapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: simpleapp
+  template: # <-- Modifié : Avancé de 2 espaces pour être EN DESSOUS de "spec"
+    metadata:
+      labels:
+        app: simpleapp
+    spec:
+      containers:
+        - name: simpleapp
+          image: kgeromel/simpleapp:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simpleapp-service
+spec:
+  type: ClusterIP
+  selector:
+    app: simpleapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+

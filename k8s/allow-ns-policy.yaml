@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-allow
+  namespace: namespace-a
+  labels:
+    app: web-allow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-allow
+  template:
+    metadata:
+      labels:
+        app: web-allow
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-namespace-b
+  namespace: namespace-a
+spec:
+  podSelector:
+    matchLabels:
+      app: web-allow
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              purpose: test
+
